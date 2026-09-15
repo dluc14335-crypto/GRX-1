@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>GRX</title>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            background: transparent;
+            color: #e4e4f0;
+            font-family: 'Segoe UI', 'Yu Gothic UI', 'Meiryo UI', 'Microsoft YaHei', 'Malgun Gothic', -apple-system, sans-serif;
+            overflow: hidden;
+            font-size: 12px;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #0a0a0f;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* ===== TOP NAV ===== */
+        .topnav {
+            height: 38px;
+            background: #0f0f16;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 6px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #1a1a24;
+            position: relative;
+        }
+
+            .topnav .logo {
+                width: 22px;
+                height: 22px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border-radius: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 800;
+                color: #fff;
+                margin-left: 6px;
+                box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+                transition: transform 0.25s ease;
+            }
+
+                .topnav .logo:hover {
+                    transform: rotate(-8deg) scale(1.08);
+                }
+
+            .topnav .brand {
+                font-size: 12px;
+                font-weight: 700;
+                color: #e4e4f0;
+                letter-spacing: 1px;
+                margin-left: 6px;
+            }
+
+            .topnav .divider {
+                width: 1px;
+                height: 16px;
+                background: #23232e;
+                margin: 0 6px;
+            }
+
+            .topnav .nav-icons {
+                display: flex;
+                gap: 3px;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 1;
+            }
+
+            .topnav .nav-btn {
+                width: 34px;
+                height: 28px;
+                background: transparent;
+                border: none;
+                color: #6b7280;
+                cursor: pointer;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.25s cubic-bezier(.4,0,.2,1);
+            }
+
+                .topnav .nav-btn:hover {
+                    background: #1a1a24;
+                    color: #a8a8b8;
+                    transform: translateY(-1px);
+                }
+
+                .topnav .nav-btn.active {
+                    color: #22c55e;
+                    background: #0f2015;
+                    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+                }
+
+                .topnav .nav-btn svg {
+                    width: 16px;
+                    height: 16px;
+                    transition: transform 0.25s;
+                }
+
+                .topnav .nav-btn.active svg {
+                    transform: scale(1.1);
+                }
+
+                .topnav .nav-btn#navMusic.active {
+                    color: #a78bfa;
+                    background: #150f24;
+                    box-shadow: 0 0 0 1px rgba(138, 92, 246, 0.35);
+                }
+
+            .topnav .spacer {
+                flex: 1;
+            }
+
+            .topnav .ctrl {
+                width: 44px;
+                height: 38px;
+                background: transparent;
+                border: none;
+                color: #828296;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.12s;
+            }
+
+                .topnav .ctrl:hover {
+                    background: #1a1a24;
+                    color: #fff;
+                }
+
+                .topnav .ctrl.close:hover {
+                    background: #e81123;
+                    color: #fff;
+                }
+
+                .topnav .ctrl svg {
+                    width: 10px;
+                    height: 10px;
+                }
+
+        /* ===== MAIN ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .left-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-right: 1px solid #1a1a24;
+        }
+
+        /* ===== PAGE ===== */
+        .page {
+            flex: 1;
+            min-height: 0;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+            .page.active {
+                display: flex;
+                animation: pageIn 0.35s cubic-bezier(.4,0,.2,1);
+            }
+
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-home {
+            background: radial-gradient(circle at 50% 40%, #0f2015 0%, #0a0a0f 60%);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+            .page-home .big-hello {
+                font-size: 96px;
+                font-weight: 900;
+                letter-spacing: -3px;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #4ade80 100%);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                line-height: 1;
+                margin-bottom: 16px;
+                animation: glowPulse 3s ease-in-out infinite;
+                user-select: none;
+            }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.3));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 40px rgba(34, 197, 94, 0.6));
+            }
+        }
+
+        .page-home .sub-hello {
+            font-size: 15px;
+            color: #6b7280;
+            letter-spacing: 2px;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .page-home .home-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #0f0f16;
+            border: 1px solid #23232e;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #a8a8b8;
+        }
+
+            .page-home .home-badge .dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #22c55e;
+                box-shadow: 0 0 8px #22c55e;
+                animation: pulse 1.5s ease-in-out infinite;
+            }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .page-editor {
+            background: #0a0a0f;
+        }
+
+        /* ===== MUSIC PAGE ===== */
+        .page-music {
+            background: radial-gradient(circle at 50% 20%, #150f24 0%, #0a0a0f 60%);
+            padding: 0;
+            overflow-y: auto;
+        }
+
+            .page-music::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .page-music::-webkit-scrollbar-thumb {
+                background: #23232e;
+                border-radius: 4px;
+            }
+
+        .music-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px 10px;
+            flex-shrink: 0;
+        }
+
+            .music-header .title {
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                color: #a78bfa;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+                .music-header .title::before {
+                    content: '';
+                    width: 7px;
+                    height: 7px;
+                    border-radius: 50%;
+                    background: #8a5cf6;
+                    box-shadow: 0 0 8px #8a5cf6;
+                }
+
+            .music-header .btn-add {
+                height: 30px;
+                padding: 0 14px;
+                background: linear-gradient(135deg, #8a5cf6, #a855f7);
+                border: none;
+                color: #fff;
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 12px;
+                font-weight: 600;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s cubic-bezier(.4,0,.2,1);
+                box-shadow: 0 4px 12px rgba(138, 92, 246, 0.3);
+            }
+
+                .music-header .btn-add:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 18px rgba(138, 92, 246, 0.5);
+                }
+
+                .music-header .btn-add:active {
+                    transform: translateY(0) scale(0.98);
+                }
+
+                .music-header .btn-add svg {
+                    width: 12px;
+                    height: 12px;
+                }
+
+        .player-card {
+            margin: 0 20px 14px;
+            background: rgba(22, 22, 30, 0.6);
+            border: 1px solid #23232e;
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .album-art {
+            width: 110px;
+            height: 110px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8a5cf6, #a855f7, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(138, 92, 246, 0.35);
+            transition: all 0.4s cubic-bezier(.4,0,.2,1);
+        }
+
+            .album-art.playing {
+                animation: albumPulse 2s ease-in-out infinite;
+            }
+
+        @keyframes albumPulse {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(138, 92, 246, 0.35);
+            }
+
+            50% {
+                box-shadow: 0 8px 36px rgba(138, 92, 246, 0.7);
+            }
+        }
+
+        .album-art svg {
+            width: 44px;
+            height: 44px;
+            color: #fff;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+
+        .album-art .spinning {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .song-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #e4e4f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist {
+            font-size: 11.5px;
+            color: #6b7280;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .seek-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: #6b7280;
+            font-family: 'Consolas', monospace;
+        }
+
+        .seek-bar {
+            flex: 1;
+            height: 5px;
+            background: #1a1a24;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+            transition: height 0.15s;
+        }
+
+            .seek-bar:hover {
+                height: 7px;
+            }
+
+        .seek-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #8a5cf6, #a855f7);
+            border-radius: 3px;
+            width: 0%;
+            box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+        }
+
+        .seek-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 8px rgba(168, 85, 247, 0.9);
+            pointer-events: none;
+            transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        .seek-bar:hover .seek-thumb {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .seek-time {
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            width: 34px;
+            height: 34px;
+            background: #1a1a24;
+            border: 1px solid #23232e;
+            color: #a8a8b8;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(.4,0,.2,1);
+            flex-shrink: 0;
+        }
+
+            .ctrl-btn:hover {
+                background: #23232e;
+                color: #fff;
+                transform: scale(1.08);
+            }
+
+            .ctrl-btn:active {
+                transform: scale(0.95);
+            }
+
+            .ctrl-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .ctrl-btn.play-main {
+                width: 42px;
+                height: 42px;
+                background: linear-gradient(135deg, #8a5cf6, #a855f7);
+                border: none;
+                color: #fff;
+                box-shadow: 0 4px 14px rgba(138, 92, 246, 0.4);
+            }
+
+                .ctrl-btn.play-main:hover {
+                    box-shadow: 0 6px 20px rgba(138, 92, 246, 0.7);
+                }
+
+                .ctrl-btn.play-main svg {
+                    width: 16px;
+                    height: 16px;
+                }
+
+            .ctrl-btn.active {
+                background: #0f2015;
+                border-color: #22c55e;
+                color: #22c55e;
+            }
+
+        .volume-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 6px;
+        }
+
+        .volume-bar {
+            width: 80px;
+            height: 4px;
+            background: #1a1a24;
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .volume-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: #a78bfa;
+            border-radius: 2px;
+            width: 100%;
+            box-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
+        }
+
+        .speed-group {
+            display: flex;
+            gap: 4px;
+            margin-left: 6px;
+            background: #1a1a24;
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid #23232e;
+        }
+
+        .speed-btn {
+            padding: 4px 9px;
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 10.5px;
+            font-weight: 700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(.4,0,.2,1);
+        }
+
+            .speed-btn:hover {
+                color: #e4e4f0;
+                background: #23232e;
+            }
+
+            .speed-btn.active {
+                background: linear-gradient(135deg, #8a5cf6, #a855f7);
+                color: #fff;
+                box-shadow: 0 2px 8px rgba(138, 92, 246, 0.5);
+            }
+
+        .playlist-wrap {
+            margin: 0 20px 14px;
+            background: rgba(22, 22, 30, 0.6);
+            border: 1px solid #23232e;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .playlist-header {
+            padding: 10px 16px;
+            background: #0f0f16;
+            border-bottom: 1px solid #23232e;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .playlist-header .count {
+                color: #a78bfa;
+                font-family: 'Consolas', monospace;
+            }
+
+        .playlist {
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 6px 0;
+        }
+
+            .playlist::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .playlist::-webkit-scrollbar-thumb {
+                background: #23232e;
+                border-radius: 4px;
+            }
+
+        .playlist-empty {
+            padding: 24px;
+            text-align: center;
+            color: #4a4a5a;
+            font-size: 12px;
+        }
+
+        .playlist-item {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(.4,0,.2,1);
+            border-left: 3px solid transparent;
+        }
+
+            .playlist-item:hover {
+                background: #16161e;
+                padding-left: 20px;
+            }
+
+            .playlist-item.active {
+                background: #150f24;
+                border-left-color: #a855f7;
+            }
+
+            .playlist-item .num {
+                width: 20px;
+                font-size: 11px;
+                color: #4a4a5a;
+                font-family: 'Consolas', monospace;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .playlist-item.active .num {
+                color: #a855f7;
+                font-weight: 700;
+            }
+
+            .playlist-item .name {
+                flex: 1;
+                font-size: 12px;
+                color: #a8a8b8;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .playlist-item.active .name {
+                color: #e4e4f0;
+                font-weight: 600;
+            }
+
+            .playlist-item .dur {
+                font-size: 11px;
+                color: #5a5a6a;
+                font-family: 'Consolas', monospace;
+                flex-shrink: 0;
+            }
+
+            .playlist-item .remove {
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                color: #5a5a6a;
+                font-size: 12px;
+                flex-shrink: 0;
+                opacity: 0;
+                transition: all 0.15s;
+            }
+
+            .playlist-item:hover .remove {
+                opacity: 1;
+            }
+
+            .playlist-item .remove:hover {
+                background: #f87171;
+                color: #fff;
+            }
+
+            .playlist-item .playing-icon {
+                color: #a855f7;
+                display: none;
+                flex-shrink: 0;
+            }
+
+            .playlist-item.active .playing-icon {
+                display: block;
+            }
+
+            .playlist-item.active .num {
+                display: none;
+            }
+
+        .eq {
+            display: inline-flex;
+            gap: 2px;
+            height: 12px;
+            align-items: flex-end;
+        }
+
+            .eq span {
+                width: 2px;
+                background: #a855f7;
+                border-radius: 1px;
+                animation: eqBar 0.8s ease-in-out infinite;
+            }
+
+                .eq span:nth-child(1) {
+                    animation-delay: 0s;
+                }
+
+                .eq span:nth-child(2) {
+                    animation-delay: 0.15s;
+                }
+
+                .eq span:nth-child(3) {
+                    animation-delay: 0.3s;
+                }
+
+        @keyframes eqBar {
+            0%, 100% {
+                height: 3px;
+            }
+
+            50% {
+                height: 12px;
+            }
+        }
+
+        /* ===== TABS BAR ===== */
+        .tabs-bar {
+            height: 34px;
+            background: #0d0d14;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            gap: 2px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+            border-bottom: 1px solid #1a1a24;
+        }
+
+            .tabs-bar::-webkit-scrollbar {
+                height: 3px;
+            }
+
+            .tabs-bar::-webkit-scrollbar-thumb {
+                background: #23232e;
+                border-radius: 3px;
+            }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 10px 0 12px;
+            height: 26px;
+            background: transparent;
+            color: #828296;
+            font-size: 11.5px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.25s cubic-bezier(.4,0,.2,1);
+            white-space: nowrap;
+            flex-shrink: 0;
+            max-width: 180px;
+            position: relative;
+        }
+
+            .tab:hover {
+                background: #16161e;
+                color: #b8b8c8;
+                transform: translateY(-1px);
+            }
+
+            .tab.active {
+                background: #16161e;
+                color: #e4e4f0;
+                border-color: #23232e;
+                box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.15), 0 2px 8px rgba(34, 197, 94, 0.1);
+            }
+
+                .tab.active::before {
+                    content: '';
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background: #22c55e;
+                    box-shadow: 0 0 6px #22c55e;
+                    flex-shrink: 0;
+                }
+
+            .tab .tab-name {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                outline: none;
+            }
+
+                .tab .tab-name[contenteditable="true"] {
+                    background: #000;
+                    padding: 1px 4px;
+                    border-radius: 3px;
+                    cursor: text;
+                    user-select: text;
+                }
+
+            .tab .tab-close {
+                width: 14px;
+                height: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                color: #5a5a6a;
+                border-radius: 3px;
+                flex-shrink: 0;
+                transition: all 0.2s;
+            }
+
+                .tab .tab-close:hover {
+                    background: #f87171;
+                    color: #fff;
+                    transform: scale(1.15) rotate(90deg);
+                }
+
+        .tab-add {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            color: #5a5a6a;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            flex-shrink: 0;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .tab-add:hover {
+                background: #16161e;
+                color: #22c55e;
+                transform: rotate(90deg) scale(1.1);
+            }
+
+        /* ===== EDITOR ===== */
+        .editor-wrap {
+            flex: 1;
+            min-height: 0;
+            background: #0a0a0f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #monacoEditor {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ✅ WATERMARK — SVG hình, nằm trên editor, opacity thấp, không che code */
+        .watermark {
+            position: absolute;
+            right: 25px;
+            bottom: 15px;
+            width: 200px;
+            height: 130px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.055;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .watermark svg {
+                width: 100%;
+                height: 100%;
+            }
+
+        /* ✅ PLACEHOLDER khi không có tab */
+        .no-tabs-placeholder {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: #4a4a5a;
+            z-index: 6;
+            background: #0a0a0f;
+            user-select: none;
+        }
+
+            .no-tabs-placeholder.visible {
+                display: flex;
+                animation: pageIn 0.3s cubic-bezier(.4,0,.2,1);
+            }
+
+            .no-tabs-placeholder .icon-plus {
+                width: 72px;
+                height: 72px;
+                border-radius: 16px;
+                background: #0f0f16;
+                border: 1.5px dashed #23232e;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #4a4a5a;
+                transition: all 0.3s ease;
+            }
+
+                .no-tabs-placeholder .icon-plus svg {
+                    width: 32px;
+                    height: 32px;
+                }
+
+            .no-tabs-placeholder .msg {
+                font-size: 13px;
+                color: #6b7280;
+                letter-spacing: 0.5px;
+                font-weight: 500;
+            }
+
+            .no-tabs-placeholder .sub {
+                font-size: 11px;
+                color: #3a3a4a;
+                letter-spacing: 0.3px;
+            }
+
+        /* ===== TERMINAL ===== */
+        .terminal {
+            height: 120px;
+            background: #0d0d14;
+            border-top: 1px solid #1a1a24;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: relative;
+            min-height: 60px;
+            max-height: 200px;
+        }
+
+        .terminal-resize-bar {
+            position: absolute;
+            top: -3px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            cursor: ns-resize;
+            z-index: 10;
+            background: transparent;
+        }
+
+            .terminal-resize-bar:hover {
+                background: rgba(138, 92, 246, 0.4);
+            }
+
+            .terminal-resize-bar:active {
+                background: rgba(138, 92, 246, 0.7);
+            }
+
+            .terminal-resize-bar::after {
+                content: '';
+                position: absolute;
+                top: 2px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 40px;
+                height: 2px;
+                background: #4a4a5a;
+                border-radius: 1px;
+            }
+
+            .terminal-resize-bar:hover::after {
+                background: #a78bfa;
+            }
+
+        .terminal-header {
+            height: 22px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #6b7280;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid #1a1a24;
+            background: #0f0f16;
+            flex-shrink: 0;
+        }
+
+            .terminal-header .hdot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #22c55e;
+                box-shadow: 0 0 6px #22c55e;
+            }
+
+            .terminal-header .header-right {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .terminal-header .size-hint {
+                font-size: 9px;
+                color: #4a4a5a;
+                letter-spacing: 0;
+                font-weight: 500;
+                font-family: 'Consolas', monospace;
+            }
+
+            .terminal-header .btn-trash {
+                width: 20px;
+                height: 18px;
+                background: transparent;
+                border: none;
+                color: #6b7280;
+                cursor: pointer;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s cubic-bezier(.4,0,.2,1);
+                padding: 0;
+            }
+
+                .terminal-header .btn-trash:hover {
+                    background: #3d1010;
+                    color: #f87171;
+                }
+
+                .terminal-header .btn-trash:active {
+                    transform: scale(0.9);
+                }
+
+                .terminal-header .btn-trash svg {
+                    width: 11px;
+                    height: 11px;
+                }
+
+        .terminal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 12px;
+            font-family: 'Consolas', 'Courier New', 'Cascadia Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            user-select: text;
+        }
+
+            .terminal-body::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .terminal-body::-webkit-scrollbar-thumb {
+                background: #23232e;
+                border-radius: 3px;
+            }
+
+        .log-line {
+            margin-bottom: 0;
+            word-wrap: break-word;
+        }
+
+        .log-time {
+            color: #5a5a6a;
+        }
+
+        .log-info {
+            color: #a78bfa;
+        }
+
+        .log-success {
+            color: #22c55e;
+        }
+
+        .log-error {
+            color: #f87171;
+        }
+
+        .log-warn {
+            color: #fbbf24;
+        }
+
+        /* ===== RIGHT PANE ===== */
+        .right-pane {
+            width: 240px;
+            background: #0d0d14;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+            .right-pane .pane-title {
+                height: 34px;
+                padding: 0 14px;
+                display: flex;
+                align-items: center;
+                font-size: 11px;
+                font-weight: 700;
+                color: #e4e4f0;
+                letter-spacing: 0.8px;
+                border-bottom: 1px solid #1a1a24;
+                background: #0f0f16;
+            }
+
+            .right-pane .search-box {
+                padding: 8px 12px;
+                flex-shrink: 0;
+            }
+
+                .right-pane .search-box input {
+                    width: 100%;
+                    height: 26px;
+                    background: #16161e;
+                    border: 1px solid #1a1a24;
+                    color: #e4e4f0;
+                    padding: 0 10px;
+                    font-size: 11.5px;
+                    border-radius: 6px;
+                    outline: none;
+                    font-family: 'Segoe UI', 'Yu Gothic UI', 'Microsoft YaHei', sans-serif;
+                    transition: all 0.2s;
+                }
+
+                    .right-pane .search-box input:focus {
+                        border-color: #22c55e;
+                        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+                    }
+
+                    .right-pane .search-box input::placeholder {
+                        color: #4a4a5a;
+                    }
+
+            .right-pane .section {
+                padding: 4px 0;
+                border-top: 1px solid #1a1a24;
+            }
+
+            .right-pane .section-title {
+                padding: 8px 14px 4px;
+                font-size: 10px;
+                color: #6b7280;
+                font-weight: 600;
+                letter-spacing: 0.8px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+                .right-pane .section-title svg {
+                    width: 10px;
+                    height: 10px;
+                    color: #4a4a5a;
+                }
+
+            .right-pane ul {
+                list-style: none;
+            }
+
+                .right-pane ul li {
+                    padding: 6px 14px 6px 26px;
+                    font-size: 11.5px;
+                    color: #a8a8b8;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    transition: all 0.2s;
+                    position: relative;
+                }
+
+                    .right-pane ul li:hover {
+                        background: #16161e;
+                        color: #e4e4f0;
+                        padding-left: 30px;
+                    }
+
+                    .right-pane ul li::before {
+                        content: '';
+                        width: 4px;
+                        height: 4px;
+                        border-radius: 50%;
+                        background: #4a4a5a;
+                        flex-shrink: 0;
+                        margin-left: -12px;
+                    }
+
+                    .right-pane ul li:hover::before {
+                        background: #22c55e;
+                        box-shadow: 0 0 6px #22c55e;
+                    }
+
+        .toggle-row {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: #a8a8b8;
+        }
+
+        .toggle {
+            position: relative;
+            width: 30px;
+            height: 16px;
+            display: inline-block;
+        }
+
+            .toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .toggle .slider {
+                position: absolute;
+                inset: 0;
+                background: #23232e;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+                .toggle .slider::before {
+                    content: '';
+                    position: absolute;
+                    width: 12px;
+                    height: 12px;
+                    left: 2px;
+                    top: 2px;
+                    background: #6b7280;
+                    border-radius: 50%;
+                    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+                }
+
+            .toggle input:checked + .slider {
+                background: #0f2015;
+            }
+
+                .toggle input:checked + .slider::before {
+                    background: #22c55e;
+                    transform: translateX(14px);
+                    box-shadow: 0 0 8px #22c55e;
+                }
+
+        /* ===== BOTTOM BAR ===== */
+        .bottombar {
+            height: 40px;
+            background: #0f0f16;
+            border-top: 1px solid #1a1a24;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+            .bottombar .btn {
+                height: 28px;
+                padding: 0 12px;
+                background: transparent;
+                border: 1px solid #23232e;
+                color: #a8a8b8;
+                font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+                font-size: 11.5px;
+                font-weight: 500;
+                cursor: pointer;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s;
+            }
+
+                .bottombar .btn:hover {
+                    background: #16161e;
+                    color: #e4e4f0;
+                    border-color: #33333e;
+                    transform: translateY(-1px);
+                }
+
+                .bottombar .btn svg {
+                    width: 11px;
+                    height: 11px;
+                }
+
+                .bottombar .btn:disabled {
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                }
+
+                .bottombar .btn.execute {
+                    border-color: #22c55e;
+                    color: #22c55e;
+                }
+
+                    .bottombar .btn.execute:hover {
+                        background: #0f2015;
+                        box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+                    }
+
+                .bottombar .btn.inject {
+                    border-color: #8a5cf6;
+                    color: #a78bfa;
+                }
+
+                    .bottombar .btn.inject:hover {
+                        background: #150f24;
+                        box-shadow: 0 0 10px rgba(138, 92, 246, 0.35);
+                    }
+
+                    .bottombar .btn.inject.done {
+                        border-color: #22c55e;
+                        color: #22c55e;
+                        background: #0f2015;
+                        cursor: not-allowed;
+                    }
+
+                .bottombar .btn.kill {
+                    border-color: #3d2020;
+                    color: #f87171;
+                }
+
+                    .bottombar .btn.kill:hover {
+                        background: #1a0808;
+                        border-color: #f87171;
+                        box-shadow: 0 0 10px rgba(248, 113, 113, 0.3);
+                    }
+
+            .bottombar .spacer {
+                flex: 1;
+            }
+
+        .status-chip {
+            height: 22px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #6b7280;
+            border-radius: 4px;
+            background: #16161e;
+            border: 1px solid #1a1a24;
+        }
+
+            .status-chip .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #4a4a5a;
+            }
+
+            .status-chip.ok {
+                color: #22c55e;
+                border-color: rgba(34, 197, 94, 0.3);
+            }
+
+                .status-chip.ok .dot {
+                    background: #22c55e;
+                    box-shadow: 0 0 6px #22c55e;
+                }
+
+            .status-chip.err {
+                color: #f87171;
+                border-color: rgba(248, 113, 113, 0.3);
+            }
+
+                .status-chip.err .dot {
+                    background: #f87171;
+                    box-shadow: 0 0 6px #f87171;
+                }
+
+        body.resizing-terminal {
+            cursor: ns-resize !important;
+        }
+
+            body.resizing-terminal * {
+                cursor: ns-resize !important;
+                user-select: none !important;
+            }
+    </style>
+</head>
+<body>
+
+    <div class='topnav' id='topnav'>
+        <div class='logo'>G</div>
+        <div class='brand'>GRX</div>
+        <div class='divider'></div>
+
+        <div class='nav-icons'>
+            <button class='nav-btn active' id='navHome' title='Home'>
+                <svg viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'>
+                    <path d='M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z' />
+                    <path d='M6 15V9h4v6' />
+                </svg>
+            </button>
+            <button class='nav-btn' id='navEditor' title='Editor'>
+                <svg viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'>
+                    <rect x='2' y='2' width='12' height='12' rx='2' />
+                    <path d='M5 6h6M5 9h6M5 12h3' />
+                </svg>
+            </button>
+            <button class='nav-btn' id='navMusic' title='Music Player'>
+                <svg viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'>
+                    <circle cx='4' cy='12' r='2' />
+                    <circle cx='11' cy='10' r='2' />
+                    <path d='M6 12V4l7-1.5V10' />
+                    <path d='M6 6l7-1.5' />
+                </svg>
+            </button>
+        </div>
+
+        <div class='spacer'></div>
+        <button class='ctrl' id='btnMin' title='Thu nhỏ'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <line x1='0' y1='5' x2='10' y2='5' />
+            </svg>
+        </button>
+        <button class='ctrl' id='btnMax' title='Phóng to'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <rect x='0.5' y='0.5' width='9' height='9' />
+            </svg>
+        </button>
+        <button class='ctrl close' id='btnClose' title='Đóng'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <line x1='0' y1='0' x2='10' y2='10' />
+                <line x1='10' y1='0' x2='0' y2='10' />
+            </svg>
+        </button>
+    </div>
+
+    <div class='main'>
+        <div class='left-pane'>
+            <div class='page page-home active' id='pageHome'>
+                <div class='big-hello'>Xin chào</div>
+                <div class='sub-hello'>WELCOME TO GRX EXECUTOR</div>
+                <div class='home-badge'>
+                    <span class='dot'></span>
+                    <span>Sẵn sàng — Nhấn <b style="color:#22c55e">Inject</b> để bắt đầu</span>
+                </div>
+            </div>
+
+            <div class='page page-editor' id='pageEditor'>
+                <div class='tabs-bar' id='tabsBar'></div>
+                <div class='editor-wrap'>
+                    <div id='monacoEditor'></div>
+
+                    <!-- ✅ WATERMARK GRX — SVG, opacity thấp, không che code -->
+                    <div class='watermark'>
+                        <svg viewBox='0 0 200 130' xmlns='http://www.w3.org/2000/svg'>
+                            <defs>
+                                <linearGradient id='grxGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+                                    <stop offset='0%' stop-color='#22c55e' />
+                                    <stop offset='100%' stop-color='#16a34a' />
+                                </linearGradient>
+                            </defs>
+                            <text x='50%' y='50%' text-anchor='middle' dominant-baseline='middle'
+                                  font-family='Arial Black, Segoe UI Black, sans-serif'
+                                  font-size='110' font-weight='900'
+                                  fill='url(#grxGrad)' letter-spacing='-8'
+                                  style='font-stretch: condensed;'>GRX</text>
+                        </svg>
+                    </div>
+
+                    <!-- ✅ PLACEHOLDER khi không có tab -->
+                    <div class='no-tabs-placeholder' id='noTabsPlaceholder'>
+                        <div class='icon-plus'>
+                            <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'>
+                                <line x1='12' y1='5' x2='12' y2='19' />
+                                <line x1='5' y1='12' x2='19' y2='12' />
+                            </svg>
+                        </div>
+                        <div class='msg'>Vui lòng bấm <b style='color:#22c55e'>+</b> để thêm tab</div>
+                        <div class='sub'>Hoặc nhấn Ctrl + T</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class='page page-music' id='pageMusic'>
+                <div class='music-header'>
+                    <div class='title'>MUSIC PLAYER</div>
+                    <button class='btn-add' id='btnAddMusic' onclick='addMusicClick()'>
+                        <svg viewBox='0 0 12 12' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round'>
+                            <path d='M6 1v10M1 6h10' />
+                        </svg>
+                        Thêm nhạc
+                    </button>
+                </div>
+
+                <div class='player-card'>
+                    <div class='album-art' id='albumArt'>
+                        <svg viewBox='0 0 24 24' fill='currentColor'>
+                            <path d='M12 3v10.55A4 4 0 1014 17V7h4V3h-6z' />
+                        </svg>
+                    </div>
+
+                    <div class='player-info'>
+                        <div>
+                            <div class='song-title' id='songTitle'>Chưa chọn bài nào</div>
+                            <div class='song-artist' id='songArtist'>Nhấn "Thêm nhạc" để bắt đầu</div>
+                        </div>
+
+                        <div class='seek-row'>
+                            <span class='seek-time' id='timeCurrent'>0:00</span>
+                            <div class='seek-bar' id='seekBar'>
+                                <div class='seek-fill' id='seekFill'></div>
+                                <div class='seek-thumb' id='seekThumb'></div>
+                            </div>
+                            <span class='seek-time' id='timeTotal'>0:00</span>
+                        </div>
+
+                        <div class='controls-row'>
+                            <button class='ctrl-btn' id='btnShuffle' title='Shuffle'>
+                                <svg viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'>
+                                    <path d='M2 4h3l6 8h3M2 12h3l2-3M11 4h3M14 4l-2-2M14 4l-2 2M14 12l-2-2M14 12l-2 2' />
+                                </svg>
+                            </button>
+                            <button class='ctrl-btn' id='btnPrev' title='Bài trước'>
+                                <svg viewBox='0 0 16 16' fill='currentColor'>
+                                    <path d='M4 2v12M5 8l8-5v10z' />
+                                </svg>
+                            </button>
+                            <button class='ctrl-btn play-main' id='btnPlay' title='Play/Pause'>
+                                <svg id='playIcon' viewBox='0 0 16 16' fill='currentColor'>
+                                    <path d='M3 2l11 6-11 6z' />
+                                </svg>
+                            </button>
+                            <button class='ctrl-btn' id='btnNext' title='Bài kế'>
+                                <svg viewBox='0 0 16 16' fill='currentColor'>
+                                    <path d='M12 2v12M11 8L3 3v10z' />
+                                </svg>
+                            </button>
+                            <button class='ctrl-btn' id='btnLoop' title='Loop'>
+                                <svg viewBox='0 0 16 16' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'>
+                                    <path d='M3 5h10l-2-2M13 11H3l2 2' />
+                                </svg>
+                            </button>
+
+                            <div class='volume-wrap'>
+                                <svg viewBox='0 0 16 16' fill='currentColor' style='width:14px;height:14px;color:#a78bfa'>
+                                    <path d='M2 6h3l4-3v10l-4-3H2zM11 8c0-1-.5-2-1.5-2.5v5C10.5 10 11 9 11 8z' />
+                                </svg>
+                                <div class='volume-bar' id='volumeBar'>
+                                    <div class='volume-fill' id='volumeFill'></div>
+                                </div>
+                            </div>
+
+                            <div class='speed-group'>
+                                <button class='speed-btn' data-speed='0.5'>0.5x</button>
+                                <button class='speed-btn active' data-speed='1'>1x</button>
+                                <button class='speed-btn' data-speed='1.5'>1.5x</button>
+                                <button class='speed-btn' data-speed='2'>2x</button>
+                                <button class='speed-btn' data-speed='3'>3x</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class='playlist-wrap'>
+                    <div class='playlist-header'>
+                        <span>PLAYLIST</span>
+                        <span class='count' id='playlistCount'>0 bài</span>
+                    </div>
+                    <div class='playlist' id='playlist'>
+                        <div class='playlist-empty'>Chưa có bài nào. Nhấn "Thêm nhạc" để thêm file mp3.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class='terminal' id='terminal'>
+                <div class='terminal-resize-bar' id='terminalResizeBar' title='Kéo để thay đổi kích thước'></div>
+                <div class='terminal-header'>
+                    <span class='hdot'></span>
+                    <span>LOG</span>
+                    <div class='header-right'>
+                        <span class='size-hint' id='terminalSizeHint'>120px</span>
+                        <button class='btn-trash' id='btnClearLog' title='Xoá toàn bộ log'>
+                            <svg viewBox='0 0 12 12' fill='none' stroke='currentColor' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'>
+                                <path d='M2 3h8' />
+                                <path d='M3 3V2.5a1 1 0 011-1h4a1 1 0 011 1V3' />
+                                <path d='M3 3v7a1 1 0 001 1h4a1 1 0 001-1V3' />
+                                <path d='M5 5v4M7 5v4' />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class='terminal-body' id='console'></div>
+            </div>
+        </div>
+
+        <aside class='right-pane'>
+            <div class='pane-title'>WORKSPACE</div>
+            <div class='search-box'>
+                <input type='text' id='searchFiles' placeholder='Search files...'>
+            </div>
+            <div class='section'>
+                <div class='section-title'>
+                    <svg viewBox='0 0 10 10' fill='currentColor'><path d='M2 1l6 4-6 4z' /></svg>
+                    SCRIPTS
+                </div>
+                <ul id='scriptList'></ul>
+            </div>
+            <div class='section'>
+                <div class='section-title'>
+                    <svg viewBox='0 0 10 10' fill='currentColor'><path d='M2 1l6 4-6 4z' /></svg>
+                    AUTO-INJECT
+                </div>
+                <div class='toggle-row'>
+                    <span>Tự động inject</span>
+                    <label class='toggle'>
+                        <input type='checkbox' id='toggleAuto'>
+                        <span class='slider'></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div class='bottombar'>
+        <button class='btn execute' id='btnExecute'>
+            <svg viewBox='0 0 10 10' fill='currentColor'><path d='M2 1l6 4-6 4z' /></svg>
+            Execute
+        </button>
+        <button class='btn' id='btnClear'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <path d='M1 3h8M3 3V2h4v1M2 3l.5 6h5l.5-6' />
+            </svg>
+            Clear
+        </button>
+        <button class='btn' id='btnOpen'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <path d='M1 3V2a1 1 0 011-1h2l1 1h3a1 1 0 011 1v5a1 1 0 01-1 1H2a1 1 0 01-1-1V3z' />
+            </svg>
+            Open
+        </button>
+        <button class='btn' id='btnSave'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <path d='M1 1h6l2 2v6H1z M3 1v3h4V1 M3 6h4v3H3z' />
+            </svg>
+            Save
+        </button>
+
+        <div class='spacer'></div>
+
+        <div class='status-chip' id='statusChip'>
+            <span class='dot'></span>
+            <span id='statusText'>Chưa inject</span>
+        </div>
+
+        <button class='btn kill' id='btnKill'>
+            <svg viewBox='0 0 10 10' fill='none' stroke='currentColor' stroke-width='1.2'>
+                <line x1='1' y1='1' x2='9' y2='9' />
+                <line x1='9' y1='1' x2='1' y2='9' />
+            </svg>
+            Kill
+        </button>
+        <button class='btn inject' id='btnInject'>
+            <svg viewBox='0 0 10 10' fill='currentColor'><path d='M5.5 0L1 6h3l-1 4 4.5-6h-3z' /></svg>
+            Inject
+        </button>
+    </div>
+
+    <script>
+        let editor = null;
+        let tabs = [];
+        let activeTabId = null;
+        let tabCounter = 0;
+        let injected = false;
+        let currentPage = 'home';
+
+        let playlist = [];
+        let currentSongIdx = -1;
+        let audio = new Audio();
+        let isShuffle = false;
+        let loopMode = 0;
+
+        const $ = id => document.getElementById(id);
+        const consoleEl = $('console');
+        const tabsBarEl = $('tabsBar');
+        const scriptList = $('scriptList');
+        const btnInject = $('btnInject');
+        const btnExecute = $('btnExecute');
+        const btnKill = $('btnKill');
+        const btnClear = $('btnClear');
+        const btnOpen = $('btnOpen');
+        const btnSave = $('btnSave');
+        const statusChip = $('statusChip');
+        const statusText = $('statusText');
+        const pageHome = $('pageHome');
+        const pageEditor = $('pageEditor');
+        const pageMusic = $('pageMusic');
+        const navHome = $('navHome');
+        const navEditor = $('navEditor');
+        const navMusic = $('navMusic');
+        const noTabsPlaceholder = $('noTabsPlaceholder');
+
+        const btnPlay = $('btnPlay');
+        const playIcon = $('playIcon');
+        const btnPrev = $('btnPrev');
+        const btnNext = $('btnNext');
+        const btnShuffle = $('btnShuffle');
+        const btnLoop = $('btnLoop');
+        const seekBar = $('seekBar');
+        const seekFill = $('seekFill');
+        const seekThumb = $('seekThumb');
+        const timeCurrent = $('timeCurrent');
+        const timeTotal = $('timeTotal');
+        const volumeBar = $('volumeBar');
+        const volumeFill = $('volumeFill');
+        const songTitle = $('songTitle');
+        const songArtist = $('songArtist');
+        const albumArt = $('albumArt');
+        const playlistEl = $('playlist');
+        const playlistCount = $('playlistCount');
+
+        // ===================== TERMINAL RESIZE =====================
+        (function setupTerminalResize() {
+            const terminal = document.getElementById('terminal');
+            const resizeBar = document.getElementById('terminalResizeBar');
+            const sizeHint = document.getElementById('terminalSizeHint');
+
+            let isResizing = false;
+            let startY = 0;
+            let startHeight = 0;
+
+            function updateHint(h) {
+                if (sizeHint) sizeHint.textContent = Math.round(h) + 'px';
+            }
+
+            resizeBar.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                isResizing = true;
+                startY = e.clientY;
+                startHeight = terminal.offsetHeight;
+                document.body.classList.add('resizing-terminal');
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const delta = startY - e.clientY;
+                let newHeight = startHeight + delta;
+
+                const minH = 60;
+                const maxH = 200;
+                if (newHeight < minH) newHeight = minH;
+                if (newHeight > maxH) newHeight = maxH;
+
+                terminal.style.height = newHeight + 'px';
+                updateHint(newHeight);
+
+                if (editor && currentPage === 'editor') {
+                    editor.layout();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.classList.remove('resizing-terminal');
+                    if (editor) editor.layout();
+                }
+            });
+        })();
+
+        // ===================== CLEAR LOG =====================
+        document.getElementById('btnClearLog').addEventListener('click', () => {
+            consoleEl.innerHTML = '';
+            const t = new Date().toTimeString().slice(0, 8);
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span class='log-time'>[${t}]</span> <span class='log-info'>Đã xoá toàn bộ log</span>`;
+            consoleEl.appendChild(line);
+        });
+
+        function log(msg, level) {
+            const t = new Date().toTimeString().slice(0, 8);
+            const cls = 'log-' + (level || 'info');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span class='log-time'>[${t}]</span> <span class='${cls}'>${escapeHtml(msg)}</span>`;
+            consoleEl.appendChild(line);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function setStatus(text, type) {
+            statusText.textContent = text;
+            statusChip.className = 'status-chip';
+            if (type === 'ok') statusChip.classList.add('ok');
+            else if (type === 'err') statusChip.classList.add('err');
+        }
+
+        function setInjected(state) {
+            injected = state;
+            if (state) {
+                btnInject.disabled = true;
+                btnInject.classList.add('done');
+                btnInject.innerHTML = '<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 5l3 3 5-6"/></svg> Đã inject';
+            } else {
+                btnInject.disabled = false;
+                btnInject.classList.remove('done');
+                btnInject.innerHTML = '<svg viewBox="0 0 10 10" fill="currentColor"><path d="M5.5 0L1 6h3l-1 4 4.5-6h-3z"/></svg> Inject';
+            }
+        }
+
+        function switchPage(name) {
+            if (currentPage === name) return;
+            currentPage = name;
+
+            pageHome.classList.remove('active');
+            pageEditor.classList.remove('active');
+            pageMusic.classList.remove('active');
+            navHome.classList.remove('active');
+            navEditor.classList.remove('active');
+            navMusic.classList.remove('active');
+
+            if (name === 'home') {
+                pageHome.classList.add('active');
+                navHome.classList.add('active');
+            } else if (name === 'editor') {
+                pageEditor.classList.add('active');
+                navEditor.classList.add('active');
+                setTimeout(() => { if (editor) editor.layout(); }, 60);
+            } else if (name === 'music') {
+                pageMusic.classList.add('active');
+                navMusic.classList.add('active');
+            }
+        }
+
+        navHome.addEventListener('click', () => switchPage('home'));
+        navEditor.addEventListener('click', () => switchPage('editor'));
+        navMusic.addEventListener('click', () => switchPage('music'));
+
+        window.addMusicClick = function () {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({ action: 'add_music' });
+            }
+        };
+
+        window.onCSharpMessage = function (payload) {
+            if (!payload) return;
+            switch (payload.type) {
+                case 'log': log(payload.message, payload.level); break;
+                case 'injected': setInjected(true); setStatus('Đã inject', 'ok'); break;
+                case 'reset': setInjected(false); setStatus('Chưa inject', ''); break;
+                case 'file_content':
+                    if (payload.name !== undefined && payload.content !== undefined) {
+                        switchPage('editor');
+                        createTab(payload.name, payload.content);
+                    }
+                    break;
+                case 'music_added':
+                    if (payload.name && payload.path) {
+                        addMusicToPlaylist(payload.name, payload.ext, payload.path);
+                    }
+                    break;
+            }
+        };
+
+        function sendToCSharp(obj) {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage(obj);
+            }
+        }
+
+        // ===================== TABS =====================
+        function renderTabs() {
+            tabsBarEl.innerHTML = '';
+            tabs.forEach(t => {
+                const el = document.createElement('div');
+                el.className = 'tab' + (t.id === activeTabId ? ' active' : '');
+                el.dataset.tabId = t.id;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'tab-name';
+                nameSpan.textContent = t.name;
+
+                const closeSpan = document.createElement('span');
+                closeSpan.className = 'tab-close';
+                closeSpan.textContent = '✕';
+
+                el.appendChild(nameSpan);
+                el.appendChild(closeSpan);
+
+                el.addEventListener('click', (e) => {
+                    if (e.target === closeSpan) return;
+                    switchTab(t.id);
+                });
+
+                nameSpan.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    startRename(t.id, nameSpan);
+                });
+
+                closeSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeTab(t.id);
+                });
+
+                tabsBarEl.appendChild(el);
+            });
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'tab-add';
+            addBtn.textContent = '+';
+            addBtn.title = 'Tab mới (Ctrl+T)';
+            addBtn.addEventListener('click', () => createTab(null, null));
+            tabsBarEl.appendChild(addBtn);
+
+            renderScriptList();
+            updateNoTabsPlaceholder();
+        }
+
+        // ✅ Hiển thị placeholder khi hết tab
+        function updateNoTabsPlaceholder() {
+            if (tabs.length === 0) {
+                noTabsPlaceholder.classList.add('visible');
+            } else {
+                noTabsPlaceholder.classList.remove('visible');
+            }
+        }
+
+        function renderScriptList() {
+            scriptList.innerHTML = '';
+            tabs.forEach(t => {
+                const li = document.createElement('li');
+                li.textContent = t.name;
+                li.addEventListener('click', () => {
+                    switchPage('editor');
+                    switchTab(t.id);
+                });
+                scriptList.appendChild(li);
+            });
+        }
+
+        function startRename(tabId, nameSpan) {
+            nameSpan.contentEditable = 'true';
+            nameSpan.focus();
+            const range = document.createRange();
+            range.selectNodeContents(nameSpan);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            const finish = () => {
+                nameSpan.contentEditable = 'false';
+                const t = tabs.find(x => x.id === tabId);
+                if (t) {
+                    let newName = nameSpan.textContent.trim() || t.name;
+                    if (!newName.endsWith('.lua') && !newName.endsWith('.txt')) newName += '.lua';
+                    t.name = newName;
+                    renderTabs();
+                }
+            };
+
+            nameSpan.addEventListener('blur', finish, { once: true });
+            nameSpan.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); nameSpan.blur(); }
+                if (e.key === 'Escape') {
+                    nameSpan.textContent = tabs.find(x => x.id === tabId).name;
+                    nameSpan.blur();
+                }
+            });
+        }
+
+        function switchTab(tabId) {
+            const t = tabs.find(x => x.id === tabId);
+            if (!t) return;
+            activeTabId = tabId;
+            if (editor) editor.setModel(t.model);
+            updateNoTabsPlaceholder();
+            renderTabs();
+        }
+
+        function createTab(name, code) {
+            tabCounter++;
+            const model = monaco.editor.createModel(code || '-- Script mới\n', 'lua');
+            const id = 'tab_' + tabCounter;
+            const t = {
+                id: id,
+                name: name || ('Script' + tabCounter + '.lua'),
+                model: model
+            };
+            tabs.push(t);
+            switchTab(id);
+            return t;
+        }
+
+        // ✅ Cho phép đóng tab cuối cùng
+        function closeTab(tabId) {
+            const idx = tabs.findIndex(x => x.id === tabId);
+            if (idx === -1) return;
+
+            // Đóng tab
+            const t = tabs[idx];
+            t.model.dispose();
+            tabs.splice(idx, 1);
+
+            // Nếu không còn tab nào → set model null, hiển thị placeholder
+            if (tabs.length === 0) {
+                activeTabId = null;
+                tabCounter = 0;  
+                if (editor) editor.setModel(null);
+                updateNoTabsPlaceholder();
+                renderTabs();
+                renderScriptList();
+                return;
+            }
+
+            // Nếu đóng tab đang active → chuyển sang tab kế bên
+            if (activeTabId === tabId) {
+                const next = tabs[Math.min(idx, tabs.length - 1)];
+                switchTab(next.id);
+            } else {
+                renderTabs();
+            }
+        }
+
+        function getActiveTab() {
+            return tabs.find(x => x.id === activeTabId) || null;
+        }
+
+        btnInject.addEventListener('click', () => {
+            if (injected) return;
+            btnInject.disabled = true;
+            sendToCSharp({ action: 'inject' });
+        });
+
+        btnExecute.addEventListener('click', () => {
+            if (!editor) return;
+            const tab = getActiveTab();
+            if (!tab) return;
+            const script = editor.getValue();
+            if (!script.trim()) return;
+            sendToCSharp({ action: 'execute', script: script });
+        });
+
+        btnKill.addEventListener('click', () => sendToCSharp({ action: 'kill' }));
+
+        btnClear.addEventListener('click', () => {
+            if (!editor) return;
+            const tab = getActiveTab();
+            if (!tab) return;
+            editor.setValue('');
+        });
+
+        btnOpen.addEventListener('click', () => sendToCSharp({ action: 'open' }));
+
+        btnSave.addEventListener('click', () => {
+            const tab = getActiveTab();
+            if (!tab || !editor) return;
+            sendToCSharp({ action: 'save', name: tab.name, script: editor.getValue() });
+        });
+
+        $('btnMin').addEventListener('click', () => sendToCSharp({ action: 'minimize' }));
+        $('btnMax').addEventListener('click', () => sendToCSharp({ action: 'maximize' }));
+        $('btnClose').addEventListener('click', () => sendToCSharp({ action: 'close' }));
+
+        $('topnav').addEventListener('mousedown', (e) => {
+            if (e.target.closest('.ctrl') || e.target.closest('.nav-btn')) return;
+            sendToCSharp({ action: 'drag' });
+        });
+        $('topnav').addEventListener('dblclick', (e) => {
+            if (e.target.closest('.ctrl') || e.target.closest('.nav-btn')) return;
+            sendToCSharp({ action: 'maximize' });
+        });
+
+        $('toggleAuto').addEventListener('change', (e) => {
+            sendToCSharp({ action: 'auto_inject', enabled: e.target.checked });
+        });
+
+        $('searchFiles').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('#scriptList li').forEach(li => {
+                li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        function addMusicToPlaylist(name, ext, path) {
+            const id = 'song_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            const song = { id, name, ext, path, duration: null };
+            playlist.push(song);
+            renderPlaylist();
+
+            if (currentSongIdx === -1) loadSong(playlist.length - 1, false);
+
+            const tmpAudio = new Audio();
+            tmpAudio.src = path;
+            tmpAudio.addEventListener('loadedmetadata', () => {
+                song.duration = tmpAudio.duration;
+                renderPlaylist();
+            }, { once: true });
+        }
+
+        function renderPlaylist() {
+            playlistCount.textContent = playlist.length + ' bài';
+            if (playlist.length === 0) {
+                playlistEl.innerHTML = '<div class="playlist-empty">Chưa có bài nào. Nhấn "Thêm nhạc" để thêm file mp3.</div>';
+                return;
+            }
+            playlistEl.innerHTML = '';
+            playlist.forEach((song, idx) => {
+                const el = document.createElement('div');
+                el.className = 'playlist-item' + (idx === currentSongIdx ? ' active' : '');
+
+                const num = document.createElement('span');
+                num.className = 'num';
+                num.textContent = (idx + 1);
+
+                const playing = document.createElement('span');
+                playing.className = 'playing-icon';
+                playing.innerHTML = '<span class="eq"><span></span><span></span><span></span></span>';
+
+                const nameEl = document.createElement('span');
+                nameEl.className = 'name';
+                nameEl.textContent = song.name;
+
+                const dur = document.createElement('span');
+                dur.className = 'dur';
+                dur.textContent = song.duration ? formatTime(song.duration) : '--:--';
+
+                const remove = document.createElement('span');
+                remove.className = 'remove';
+                remove.textContent = '✕';
+                remove.addEventListener('click', (e) => { e.stopPropagation(); removeSong(idx); });
+
+                el.appendChild(num);
+                el.appendChild(playing);
+                el.appendChild(nameEl);
+                el.appendChild(dur);
+                el.appendChild(remove);
+
+                el.addEventListener('click', () => loadSong(idx, true));
+                playlistEl.appendChild(el);
+            });
+        }
+
+        function removeSong(idx) {
+            if (idx < 0 || idx >= playlist.length) return;
+            const removingCurrent = (idx === currentSongIdx);
+            playlist.splice(idx, 1);
+
+            if (playlist.length === 0) {
+                audio.pause();
+                currentSongIdx = -1;
+                songTitle.textContent = 'Chưa chọn bài nào';
+                songArtist.textContent = 'Nhấn "Thêm nhạc" để bắt đầu';
+                updatePlayIcon(false);
+            } else if (removingCurrent) {
+                const next = Math.min(idx, playlist.length - 1);
+                loadSong(next, !audio.paused);
+            } else if (idx < currentSongIdx) {
+                currentSongIdx--;
+            }
+            renderPlaylist();
+        }
+
+        function loadSong(idx, autoplay) {
+            if (idx < 0 || idx >= playlist.length) return;
+            const song = playlist[idx];
+            currentSongIdx = idx;
+            audio.src = song.path;
+            audio.playbackRate = getCurrentSpeed();
+            songTitle.textContent = song.name;
+            songArtist.textContent = (song.ext || 'audio').toUpperCase() + ' • ' + (song.duration ? formatTime(song.duration) : '...');
+            renderPlaylist();
+
+            if (autoplay) {
+                audio.play().then(() => updatePlayIcon(true)).catch(() => { });
+            } else {
+                updatePlayIcon(false);
+            }
+        }
+
+        function updatePlayIcon(isPlaying) {
+            if (isPlaying) {
+                playIcon.innerHTML = '<path d="M3 2h3v12H3zM10 2h3v12h-3z"/>';
+                albumArt.classList.add('playing');
+                albumArt.querySelector('svg').classList.add('spinning');
+            } else {
+                playIcon.innerHTML = '<path d="M3 2l11 6-11 6z"/>';
+                albumArt.classList.remove('playing');
+                albumArt.querySelector('svg').classList.remove('spinning');
+            }
+        }
+
+        btnPlay.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            if (currentSongIdx === -1) { loadSong(0, true); return; }
+            if (audio.paused) audio.play().then(() => updatePlayIcon(true)).catch(() => { });
+            else { audio.pause(); updatePlayIcon(false); }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            let idx = currentSongIdx - 1;
+            if (idx < 0) idx = playlist.length - 1;
+            if (isShuffle) idx = Math.floor(Math.random() * playlist.length);
+            loadSong(idx, true);
+        });
+
+        btnNext.addEventListener('click', () => {
+            if (playlist.length === 0) return;
+            let idx = currentSongIdx + 1;
+            if (idx >= playlist.length) {
+                if (loopMode === 0) return;
+                idx = 0;
+            }
+            if (isShuffle) idx = Math.floor(Math.random() * playlist.length);
+            loadSong(idx, true);
+        });
+
+        btnShuffle.addEventListener('click', () => {
+            isShuffle = !isShuffle;
+            btnShuffle.classList.toggle('active', isShuffle);
+        });
+
+        btnLoop.addEventListener('click', () => {
+            loopMode = (loopMode + 1) % 3;
+            btnLoop.classList.toggle('active', loopMode !== 0);
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                seekFill.style.width = pct + '%';
+                seekThumb.style.left = pct + '%';
+                timeCurrent.textContent = formatTime(audio.currentTime);
+            }
+        });
+        audio.addEventListener('loadedmetadata', () => timeTotal.textContent = formatTime(audio.duration));
+        audio.addEventListener('ended', () => {
+            if (loopMode === 2) { audio.currentTime = 0; audio.play(); return; }
+            let idx = currentSongIdx + 1;
+            if (idx >= playlist.length) {
+                if (loopMode === 1) idx = 0;
+                else { updatePlayIcon(false); return; }
+            }
+            if (isShuffle) idx = Math.floor(Math.random() * playlist.length);
+            loadSong(idx, true);
+        });
+        audio.addEventListener('play', () => updatePlayIcon(true));
+        audio.addEventListener('pause', () => updatePlayIcon(false));
+
+        function seekTo(e) {
+            if (!audio.duration) return;
+            const rect = seekBar.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            audio.currentTime = (x / rect.width) * audio.duration;
+        }
+        let seeking = false;
+        seekBar.addEventListener('mousedown', (e) => { seeking = true; seekTo(e); });
+        document.addEventListener('mousemove', (e) => { if (seeking) seekTo(e); });
+        document.addEventListener('mouseup', () => { seeking = false; });
+
+        function setVolume(e) {
+            const rect = volumeBar.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            const vol = x / rect.width;
+            audio.volume = vol;
+            volumeFill.style.width = (vol * 100) + '%';
+        }
+        let volDragging = false;
+        volumeBar.addEventListener('mousedown', (e) => { volDragging = true; setVolume(e); });
+        document.addEventListener('mousemove', (e) => { if (volDragging) setVolume(e); });
+        document.addEventListener('mouseup', () => { volDragging = false; });
+
+        function getCurrentSpeed() {
+            const active = document.querySelector('.speed-btn.active');
+            return active ? parseFloat(active.dataset.speed) : 1;
+        }
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const speed = parseFloat(btn.dataset.speed);
+                audio.playbackRate = speed;
+            });
+        });
+
+        function formatTime(sec) {
+            if (!sec || isNaN(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        audio.volume = 1;
+
+        // ===================== MONACO =====================
+        require.config({
+            paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
+        });
+
+        require(['vs/editor/editor.main'], function () {
+
+            monaco.editor.defineTheme('grx-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '5a5a6a', fontStyle: 'italic' },
+                    { token: 'keyword', foreground: '4ade80', fontStyle: 'bold' },
+                    { token: 'string', foreground: '86efac' },
+                    { token: 'number', foreground: 'fbbf24' },
+                    { token: 'identifier', foreground: 'e4e4f0' },
+                    { token: 'operator', foreground: 'a78bfa' },
+                    { token: 'delimiter', foreground: '94a3b8' },
+                    { token: 'type', foreground: '60a5fa' },
+                ],
+                colors: {
+                    'editor.background': '#0a0a0f',
+                    'editor.foreground': '#e4e4f0',
+                    'editorLineNumber.foreground': '#3a3a4a',
+                    'editorLineNumber.activeForeground': '#22c55e',
+                    'editor.lineHighlightBackground': '#0f0f16',
+                    'editor.selectionBackground': '#22c55e30',
+                    'editorCursor.foreground': '#22c55e',
+                    'editorIndentGuide.background': '#1a1a24',
+                    'editorWidget.background': '#0f0f16',
+                    'editorSuggestWidget.background': '#0f0f16',
+                    'editorSuggestWidget.border': '#23232e',
+                    'editorSuggestWidget.selectedBackground': '#22c55e20',
+                    'scrollbarSlider.background': '#23232e80',
+                    'scrollbarSlider.hoverBackground': '#33333ec0',
+                    'scrollbarSlider.activeBackground': '#22c55e80',
+                }
+            });
+
+            editor = monaco.editor.create($('monacoEditor'), {
+                theme: 'grx-dark',
+                fontSize: 13,
+                fontFamily: 'Consolas, "Cascadia Code", "Courier New", "Yu Gothic UI", "Meiryo UI", "Microsoft YaHei", "Malgun Gothic", monospace',
+                fontLigatures: true,
+                lineHeight: 20,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                roundedSelection: true,
+                padding: { top: 12, bottom: 12 },
+                tabSize: 4,
+                insertSpaces: true,
+                renderLineHighlight: 'all',
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                smoothScrolling: true,
+                unicodeHighlight: {
+                    ambiguousCharacters: false,
+                    invisibleCharacters: false,
+                    nonBasicASCII: false,
+                },
+                scrollbar: {
+                    verticalScrollbarSize: 8,
+                    horizontalScrollbarSize: 8,
+                    useShadows: false
+                },
+                suggestOnTriggerCharacters: true,
+                quickSuggestions: { other: 'on', comments: 'on', strings: 'on' },
+                wordBasedSuggestions: true,
+                formatOnPaste: true,
+                acceptSuggestionOnEnter: 'on',
+                tabCompletion: 'on',
+            });
+
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => btnExecute.click());
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT, () => createTab(null, null));
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => btnSave.click());
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, () => btnOpen.click());
+            editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
+                editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
+            });
+
+            // ============ AUTOCOMPLETE — LUA + C++ + C# ============
+            monaco.languages.registerCompletionItemProvider('lua', {
+                triggerCharacters: [
+                    '.', ':', '"', "'", '(', '[', '{', '<',
+                    ' ', '=', ',', ';', '+', '-', '*', '/', '%',
+                    '!', '?', '|', '&', '^', '~'
+                ],
+                provideCompletionItems: function (model, position) {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                    };
+
+                    const mk = (label, kind, detail, insertText, doc) => ({
+                        label: label,
+                        kind: kind,
+                        detail: detail,
+                        documentation: doc,
+                        insertText: insertText || label,
+                        insertTextRules: (insertText && insertText.includes('${'))
+                            ? monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+                            : undefined,
+                        range: range,
+                        sortText: '0' + label
+                    });
+
+                    const K = monaco.languages.CompletionItemKind;
+
+                    const luaKeywords = [
+                        'local', 'function', 'end', 'if', 'then', 'else', 'elseif',
+                        'for', 'while', 'do', 'repeat', 'until', 'return', 'break',
+                        'and', 'or', 'not', 'nil', 'true', 'false', 'in', 'goto'
+                    ].map(k => mk(k, K.Keyword, 'Lua keyword'));
+
+                    const luaGlobals = [
+                        ['print', 'print(${1:...})', 'In ra'], ['warn', 'warn(${1:...})', 'Cảnh báo'],
+                        ['error', 'error(${1:msg})', 'Lỗi'], ['assert', 'assert(${1:v}, ${2:msg})', 'Kiểm tra'],
+                        ['type', 'type(${1:v})', 'Kiểu'], ['typeof', 'typeof(${1:v})', 'Kiểu RBX'],
+                        ['tostring', 'tostring(${1:v})', '→chuỗi'], ['tonumber', 'tonumber(${1:v})', '→số'],
+                        ['pairs', 'pairs(${1:t})', 'Duyệt'], ['ipairs', 'ipairs(${1:t})', 'Duyệt mảng'],
+                        ['select', 'select(${1:n}, ...)', 'Tham số'], ['unpack', 'unpack(${1:t})', 'Giải nén'],
+                        ['pcall', 'pcall(function()\n\t${1}\nend)', 'An toàn'],
+                        ['xpcall', 'xpcall(function()\n\t${1}\nend, function(${2})\n\t${3}\nend)', 'An toàn+'],
+                        ['setmetatable', 'setmetatable(${1:t}, ${2:mt})', 'Set MT'],
+                        ['getmetatable', 'getmetatable(${1:t})', 'Get MT'],
+                        ['require', 'require(${1:module})', 'Import'],
+                        ['loadstring', 'loadstring(${1:code})()', 'Load'],
+                        ['_G', '_G', 'Global table'],
+                    ].map(a => mk(a[0], K.Function, 'Lua global', a[1], a[2]));
+
+                    const luaLibs = [
+                        ['string.format', 'string.format("${1:%s}", ${2:v})', 'Format'],
+                        ['string.sub', 'string.sub(${1:s}, ${2:i}, ${3:j})', 'Cắt'],
+                        ['string.find', 'string.find(${1:s}, ${2:p})', 'Tìm'],
+                        ['string.match', 'string.match(${1:s}, ${2:p})', 'Match'],
+                        ['string.gsub', 'string.gsub(${1:s}, ${2:p}, ${3:r})', 'Thay'],
+                        ['string.split', 'string.split(${1:s}, "${2:,}")', 'Tách'],
+                        ['string.upper', 'string.upper(${1:s})', 'HOA'],
+                        ['string.lower', 'string.lower(${1:s})', 'thường'],
+                        ['string.rep', 'string.rep(${1:s}, ${2:n})', 'Lặp'],
+                        ['string.len', 'string.len(${1:s})', 'Độ dài'],
+                        ['table.insert', 'table.insert(${1:t}, ${2:v})', 'Chèn'],
+                        ['table.remove', 'table.remove(${1:t}, ${2:i})', 'Xóa'],
+                        ['table.sort', 'table.sort(${1:t})', 'Sắp xếp'],
+                        ['table.concat', 'table.concat(${1:t}, "${2:,}")', 'Nối'],
+                        ['table.find', 'table.find(${1:t}, ${2:v})', 'Tìm'],
+                        ['table.unpack', 'table.unpack(${1:t})', 'Giải'],
+                        ['math.floor', 'math.floor(${1:x})', 'Floor'],
+                        ['math.ceil', 'math.ceil(${1:x})', 'Ceil'],
+                        ['math.abs', 'math.abs(${1:x})', 'ABS'],
+                        ['math.max', 'math.max(${1:a}, ${2:b})', 'Max'],
+                        ['math.min', 'math.min(${1:a}, ${2:b})', 'Min'],
+                        ['math.random', 'math.random(${1:1}, ${2:10})', 'Random'],
+                        ['math.sqrt', 'math.sqrt(${1:x})', 'Căn'],
+                        ['math.sin', 'math.sin(${1:x})', 'Sin'],
+                        ['math.cos', 'math.cos(${1:x})', 'Cos'],
+                        ['math.tan', 'math.tan(${1:x})', 'Tan'],
+                        ['math.deg', 'math.deg(${1:x})', 'Rad→Deg'],
+                        ['math.rad', 'math.rad(${1:x})', 'Deg→Rad'],
+                        ['math.clamp', 'math.clamp(${1:v}, ${2:min}, ${3:max})', 'Clamp'],
+                        ['math.pi', 'math.pi', 'Pi'],
+                        ['math.huge', 'math.huge', 'Huge'],
+                        ['os.time', 'os.time()', 'Time'],
+                        ['os.date', 'os.date("${1:%Y-%m-%d}")', 'Date'],
+                        ['os.clock', 'os.clock()', 'Clock'],
+                        ['os.getenv', 'os.getenv("${1:TEMP}")', 'Env'],
+                        ['coroutine.create', 'coroutine.create(function()\n\t${1}\nend)', 'Tạo'],
+                        ['coroutine.resume', 'coroutine.resume(${1:co})', 'Chạy'],
+                        ['coroutine.yield', 'coroutine.yield()', 'Yield'],
+                        ['coroutine.wrap', 'coroutine.wrap(function()\n\t${1}\nend)', 'Wrap'],
+                    ].map(a => mk(a[0], K.Method, 'Lua library', a[1], a[2]));
+
+                    const execFns = [
+                        ['getgenv', 'getgenv()', 'Env global'], ['getrenv', 'getrenv()', 'Env RBX'],
+                        ['getreg', 'getreg()', 'Registry'], ['getgc', 'getgc(${1:true})', 'GC'],
+                        ['getinstances', 'getinstances()', 'Instances'], ['getnilinstances', 'getnilinstances()', 'Nil'],
+                        ['getloadedmodules', 'getloadedmodules()', 'Modules'], ['getscripts', 'getscripts()', 'Scripts'],
+                        ['getconnections', 'getconnections(${1:signal})', 'Connections'],
+                        ['firesignal', 'firesignal(${1:signal})', 'Fire signal'],
+                        ['fireclickdetector', 'fireclickdetector(${1:cd})', 'Fire click'],
+                        ['firetouchinterest', 'firetouchinterest(${1:p1}, ${2:p2}, ${3:0})', 'Fire touch'],
+                        ['fireproximityprompt', 'fireproximityprompt(${1:p})', 'Fire prompt'],
+                        ['hookfunction', 'hookfunction(${1:old}, ${2:new})', 'Hook'],
+                        ['hookmetamethod', 'hookmetamethod(${1:obj}, "${2:__namecall}", ${3:func})', 'Hook MM'],
+                        ['getnamecallmethod', 'getnamecallmethod()', 'Namecall'],
+                        ['newcclosure', 'newcclosure(${1:func})', 'C closure'],
+                        ['checkcaller', 'checkcaller()', 'Check'],
+                        ['clonefunction', 'clonefunction(${1:func})', 'Clone'],
+                        ['setreadonly', 'setreadonly(${1:table}, ${2:true})', 'Set RO'],
+                        ['isreadonly', 'isreadonly(${1:table})', 'Is RO'],
+                        ['identifyexecutor', 'identifyexecutor()', 'Executor'],
+                        ['getexecutorname', 'getexecutorname()', 'Name'],
+                        ['writefile', 'writefile(${1:p}, ${2:d})', 'Ghi'],
+                        ['appendfile', 'appendfile(${1:p}, ${2:d})', 'Ghi+'],
+                        ['readfile', 'readfile(${1:p})', 'Đọc'],
+                        ['isfile', 'isfile(${1:p})', 'Check'],
+                        ['delfile', 'delfile(${1:p})', 'Xóa'],
+                        ['listfiles', 'listfiles(${1:p})', 'List'],
+                        ['makefolder', 'makefolder(${1:p})', 'Folder'],
+                        ['isfolder', 'isfolder(${1:p})', 'CheckF'],
+                        ['delfolder', 'delfolder(${1:p})', 'XóaF'],
+                        ['HttpGet', 'HttpGet(${1:url})', 'GET'],
+                        ['HttpGetAsync', 'HttpGetAsync(${1:url})', 'GET async'],
+                        ['HttpPost', 'HttpPost(${1:url}, ${2:body})', 'POST'],
+                        ['request', 'request({Url="${1:url}", Method="${2:GET}"})', 'HTTP'],
+                        ['loadstring', 'loadstring(${1:code})()', 'Load'],
+                        ['getscriptbytecode', 'getscriptbytecode(${1:s})', 'Bytecode'],
+                        ['decompile', 'decompile(${1:s})', 'Decompile'],
+                        ['task.wait', 'task.wait(${1:1})', 'Wait'],
+                        ['task.spawn', 'task.spawn(function()\n\t${1}\nend)', 'Spawn'],
+                        ['task.defer', 'task.defer(function()\n\t${1}\nend)', 'Defer'],
+                        ['task.delay', 'task.delay(${1:1}, function()\n\t${2}\nend)', 'Delay'],
+                        ['task.cancel', 'task.cancel(${1:t})', 'Cancel'],
+                        ['wait', 'wait(${1:1})', 'Wait'],
+                        ['spawn', 'spawn(function()\n\t${1}\nend)', 'Spawn'],
+                        ['delay', 'delay(${1:1}, function()\n\t${2}\nend)', 'Delay'],
+                        ['tick', 'tick()', 'Tick'], ['time', 'time()', 'Time'],
+                        ['elapsedTime', 'elapsedTime()', 'Elapsed'],
+                        ['syn', 'syn', 'Synapse'], ['fluxus', 'fluxus', 'Fluxus'],
+                    ].map(a => mk(a[0], K.Function, 'Executor', a[1], a[2]));
+
+                    const rbxGlobals = [
+                        ['game', 'game', 'Game'], ['workspace', 'workspace', 'Workspace'],
+                        ['script', 'script', 'Script'], ['Enum', 'Enum.${1:KeyCode}.${2:A}', 'Enum'],
+                        ['Instance', 'Instance.new("${1:Part}")', 'Instance'],
+                        ['Vector3', 'Vector3.new(${1:0}, ${2:0}, ${3:0})', 'Vector3'],
+                        ['Vector2', 'Vector2.new(${1:0}, ${2:0})', 'Vector2'],
+                        ['CFrame', 'CFrame.new(${1:0}, ${2:0}, ${3:0})', 'CFrame'],
+                        ['CFrame.Angles', 'CFrame.Angles(${1:0}, ${2:0}, ${3:0})', 'Angles'],
+                        ['Color3', 'Color3.fromRGB(${1:255}, ${2:255}, ${3:255})', 'Color3'],
+                        ['BrickColor', 'BrickColor.new("${1:Really red}")', 'Brick'],
+                        ['UDim', 'UDim.new(${1:0}, ${2:0})', 'UDim'],
+                        ['UDim2', 'UDim2.new(${1:0}, ${2:0}, ${3:0}, ${4:0})', 'UDim2'],
+                        ['Ray', 'Ray.new(${1:o}, ${2:d})', 'Ray'],
+                        ['TweenInfo', 'TweenInfo.new(${1:1}, ${2:Enum.EasingStyle.Linear})', 'TweenInfo'],
+                        ['Random', 'Random.new()', 'Random'],
+                        ['DateTime', 'DateTime.now()', 'DateTime'],
+                        ['task', 'task.${1:wait}(${2:0})', 'Task'],
+                    ].map(a => mk(a[0], K.Variable, 'Roblox global', a[1], a[2]));
+
+                    const services = [
+                        'Players', 'Workspace', 'Lighting', 'ReplicatedStorage', 'ReplicatedFirst',
+                        'ServerScriptService', 'ServerStorage', 'StarterGui', 'StarterPack',
+                        'StarterPlayer', 'SoundService', 'TweenService', 'RunService',
+                        'UserInputService', 'HttpService', 'MarketplaceService', 'TeleportService',
+                        'Chat', 'Teams', 'CollectionService', 'PathfindingService', 'PhysicsService',
+                        'ContextActionService', 'GuiService', 'ContentProvider', 'InsertService',
+                        'LogService', 'MemoryStoreService', 'MessagingService', 'PolicyService',
+                        'ProximityPromptService', 'ScriptContext', 'Selection', 'SocialService',
+                        'Stats', 'TestService', 'TextChatService', 'TextService',
+                        'TouchInputService', 'VRService', 'VoiceChatService', 'AvatarEditorService',
+                        'BadgeService', 'DataStoreService', 'FriendService', 'GamePassService'
+                    ].map(s => mk(s, K.Class, 'Service', `game:GetService("${s}")`, 'Roblox Service'));
+
+                    const rbxMethods = [
+                        ['GetService', ':GetService("${1:Players}")', 'Service'],
+                        ['FindFirstChild', ':FindFirstChild("${1:name}")', 'Tìm con'],
+                        ['FindFirstChildOfClass', ':FindFirstChildOfClass("${1:Part}")', 'Class'],
+                        ['FindFirstAncestor', ':FindFirstAncestor("${1:name}")', 'Ancestor'],
+                        ['WaitForChild', ':WaitForChild("${1:name}")', 'Đợi'],
+                        ['GetChildren', ':GetChildren()', 'Children'],
+                        ['GetDescendants', ':GetDescendants()', 'Descendants'],
+                        ['GetAttribute', ':GetAttribute("${1:name}")', 'Attr'],
+                        ['SetAttribute', ':SetAttribute("${1:name}", ${2:v})', 'Set attr'],
+                        ['IsA', ':IsA("${1:Part}")', 'IsA'],
+                        ['Clone', ':Clone()', 'Clone'],
+                        ['Destroy', ':Destroy()', 'Destroy'],
+                        ['SetPrimaryPartCFrame', ':SetPrimaryPartCFrame(${1:cf})', 'Set CF'],
+                        ['GetPivot', ':GetPivot()', 'Pivot'],
+                        ['PivotTo', ':PivotTo(${1:cf})', 'Pivot'],
+                        ['MoveTo', ':MoveTo(${1:pos})', 'Move'],
+                        ['BreakJoints', ':BreakJoints()', 'Break'],
+                        ['IsDescendantOf', ':IsDescendantOf(${1:o})', 'Desc'],
+                    ].map(a => mk(a[0], K.Method, 'Roblox method', a[1], a[2]));
+
+                    const events = [
+                        ['Connect', ':Connect(function(${1})\n\t${2}\nend)', 'Kết nối'],
+                        ['Once', ':Once(function(${1})\n\t${2}\nend)', '1 lần'],
+                        ['Wait', ':Wait()', 'Đợi'],
+                        ['Disconnect', ':Disconnect()', 'Ngắt'],
+                        ['Fire', ':Fire(${1})', 'Fire'],
+                        ['Invoke', ':Invoke(${1})', 'Invoke'],
+                        ['FireServer', ':FireServer(${1})', 'Fire server'],
+                        ['InvokeServer', ':InvokeServer(${1})', 'Invoke server'],
+                    ].map(a => mk(a[0], K.Method, 'Roblox event', a[1], a[2]));
+
+                    const properties = [
+                        'Name', 'ClassName', 'Parent', 'Position', 'CFrame', 'Size', 'Color',
+                        'Transparency', 'Anchored', 'CanCollide', 'Material', 'BrickColor',
+                        'Shape', 'Value', 'Text', 'Visible', 'Enabled', 'Health', 'WalkSpeed',
+                        'JumpPower', 'Humanoid', 'HumanoidRootPart', 'Head', 'Character',
+                        'UserId', 'DisplayName', 'LocalPlayer', 'Backpack'
+                    ].map(p => mk(p, K.Property, 'Roblox property'));
+
+                    const cppKeywords = [
+                        'int', 'float', 'double', 'char', 'bool', 'void', 'long', 'short',
+                        'unsigned', 'signed', 'const', 'static', 'extern', 'volatile',
+                        'class', 'struct', 'union', 'enum', 'namespace', 'using', 'typedef',
+                        'template', 'typename', 'virtual', 'override', 'final', 'friend',
+                        'public', 'private', 'protected', 'new', 'delete', 'this',
+                        'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default',
+                        'break', 'continue', 'return', 'goto', 'try', 'catch', 'throw',
+                        'true', 'false', 'nullptr', 'auto', 'decltype', 'constexpr',
+                        'static_cast', 'dynamic_cast', 'reinterpret_cast', 'const_cast',
+                        'std', 'cout', 'cin', 'endl', 'string', 'vector', 'map', 'set',
+                        'pair', 'list', 'queue', 'stack', 'array', 'unique_ptr', 'shared_ptr',
+                        'make_unique', 'make_shared', 'begin', 'end', 'size', 'push_back',
+                        'pop_back', 'emplace_back', 'insert', 'erase', 'find', 'at',
+                        'substr', 'length', 'c_str', 'printf', 'scanf', 'malloc', 'free',
+                        'memcpy', 'memset', 'strlen', 'strcmp', 'sqrt', 'pow', 'abs'
+                    ].map(k => mk(k, K.Keyword, 'C++ keyword'));
+
+                    const cppSnippets = [
+                        ['#include', '#include <${1:iostream}>', 'Include'],
+                        ['main', 'int main() {\n\t${1}\n\treturn 0;\n}', 'Main'],
+                        ['cout', 'std::cout << ${1:""} << std::endl;', 'Print'],
+                        ['cin', 'std::cin >> ${1:var};', 'Input'],
+                        ['vector', 'std::vector<${1:int}> ${2:vec};', 'Vector'],
+                        ['forcpp', 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n\t${3}\n}', 'For'],
+                        ['foreachcpp', 'for (auto& ${1:item} : ${2:container}) {\n\t${3}\n}', 'Foreach'],
+                        ['classcpp', 'class ${1:Name} {\npublic:\n\t${2}\n};', 'Class'],
+                    ].map(a => mk(a[0], K.Snippet, 'C++ snippet', a[1], a[2]));
+
+                    const csharpKeywords = [
+                        'int', 'float', 'double', 'char', 'bool', 'string', 'object', 'var',
+                        'long', 'short', 'byte', 'decimal', 'void', 'null', 'true', 'false',
+                        'class', 'struct', 'interface', 'enum', 'namespace', 'using',
+                        'public', 'private', 'protected', 'internal', 'static', 'readonly',
+                        'const', 'virtual', 'override', 'abstract', 'sealed', 'partial',
+                        'new', 'this', 'base', 'as', 'is', 'typeof', 'sizeof', 'nameof',
+                        'if', 'else', 'for', 'foreach', 'while', 'do', 'switch', 'case',
+                        'default', 'break', 'continue', 'return', 'goto', 'try', 'catch',
+                        'finally', 'throw', 'lock', 'async', 'await', 'yield', 'in', 'out',
+                        'ref', 'params', 'where', 'get', 'set', 'value', 'event', 'delegate',
+                        'Action', 'Func', 'Task', 'List', 'Dictionary', 'HashSet', 'Queue',
+                        'Stack', 'Array', 'Console', 'WriteLine', 'ReadLine', 'String',
+                        'Int32', 'Int64', 'Double', 'Boolean', 'Math', 'DateTime', 'TimeSpan',
+                        'Guid', 'Exception', 'LINQ', 'Select', 'Where', 'OrderBy', 'ToList',
+                        'ToArray', 'First', 'FirstOrDefault', 'Any', 'All', 'Count', 'Sum'
+                    ].map(k => mk(k, K.Keyword, 'C# keyword'));
+
+                    const csharpSnippets = [
+                        ['usingcs', 'using System;\nusing System.Collections.Generic;\nusing System.Linq;', 'Using'],
+                        ['namespacecs', 'namespace ${1:MyApp} {\n\t${2}\n}', 'Namespace'],
+                        ['classcs', 'public class ${1:Name} {\n\t${2}\n}', 'Class'],
+                        ['maincs', 'static void Main(string[] args) {\n\t${1}\n}', 'Main'],
+                        ['console', 'Console.WriteLine(${1:"Hello"});', 'Console'],
+                        ['ifcs', 'if (${1:cond}) {\n\t${2}\n}', 'If'],
+                        ['forcs', 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n\t${3}\n}', 'For'],
+                        ['foreachcs', 'foreach (var ${1:item} in ${2:collection}) {\n\t${3}\n}', 'Foreach'],
+                        ['trycs', 'try {\n\t${1}\n} catch (Exception ${2:ex}) {\n\t${3}\n}', 'Try'],
+                        ['prop', 'public ${1:int} ${2:Name} { get; set; }', 'Property'],
+                        ['method', 'public ${1:void} ${2:MethodName}(${3}) {\n\t${4}\n}', 'Method'],
+                        ['linq', '${1:list}.Where(x => ${2:cond}).ToList();', 'LINQ'],
+                    ].map(a => mk(a[0], K.Snippet, 'C# snippet', a[1], a[2]));
+
+                    return {
+                        suggestions: [].concat(
+                            luaKeywords, luaGlobals, luaLibs, execFns,
+                            rbxGlobals, services, rbxMethods, events, properties,
+                            cppKeywords, cppSnippets,
+                            csharpKeywords, csharpSnippets
+                        )
+                    };
+                }
+            });
+
+            editor.updateOptions({
+                suggest: {
+                    showKeywords: true, showSnippets: true, showFunctions: true,
+                    showMethods: true, showClasses: true, showProperties: true,
+                    showVariables: true, showWords: true, showConstants: true,
+                    showConstructors: true, showEvents: true, showFields: true,
+                    showInterfaces: true, showModules: true, showOperators: true,
+                    showStructs: true, showValues: true
+                }
+            });
+
+            createTab('Script1.lua',
+                '-- GRX Executor\n' +
+                '-- Viết script Lua của bạn ở đây\n' +
+                '-- Hỗ trợ tiếng Việt, Nhật, Trung, Hàn...\n\n' +
+                'print("Hello from GRX!")\n');
+
+            log('GRX v1.0 sẵn sàng', 'info');
+            setTimeout(() => sendToCSharp({ action: 'ready' }), 200);
+        });
+    </script>
+</body>
+</html>
